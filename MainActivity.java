@@ -14,7 +14,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     double product = 1;
     int factor = 1;
     String operator = "";
-    boolean first = true;
+    boolean negative = false;
+    double previousNum = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         Button equal = (Button) findViewById(R.id.equalButton);
         equal.setOnClickListener(this);
+
+        Button negative = (Button) findViewById(R.id.negativeButton);
+        negative.setOnClickListener(this);
+
     }
 
     @Override
@@ -124,14 +129,127 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 output.append("0");
                 break;
 
+            case R.id.negativeButton:
+                if (operator.equals("")) {
+
+                    if (!negative) {
+                        output.setText("-" + output.getText());
+                        negative = true;
+                    } else {
+                        output.setText(output.getText().toString().replace("-", ""));
+                        negative = false;
+                    }
+                } else {
+                    if (output.getText().length() == index) {
+                        output.append("-");
+                    } else {
+                        String lastInput = output.getText().toString().substring(index);
+                        if (lastInput.equals("-")) {
+                            output.setText(output.getText().toString().substring(0, output.length() - 1));
+                        } else if (Character.isDigit(lastInput.charAt(0))) {
+                            output.setText(output.getText().toString().substring(0, index) + "-" + lastInput);
+                        } else if (lastInput.substring(0, 1).equals("-")) {
+                            String removeNegative = output.getText().toString().substring(0, index) + output.getText().toString().substring(index + 1);
+                            output.setText(removeNegative);
+                        } else {
+                            output.append("-");
+                        }
+                    }
+                }
+
+                break;
+
+            case R.id.plusButton:
+                negative = false;
+                if (output.length() == 0) {
+                    output.append("0 + ");
+                    index = output.length();
+                    operator = "+";
+
+                } else {
+                    output.append(" + ");
+
+                    if (operator.equals("+") || operator.equals("")) {
+                        String currentOutput = output.getText().toString();
+                        String add = currentOutput.substring(index, currentOutput.length() - 3);
+                        previousNum = Double.parseDouble(add);
+                        num += previousNum;
+                        index = currentOutput.length();
+                        operator = "+";
+                    }
+                    if (operator.equals("-")) {
+                        String currentOutput = output.getText().toString();
+                        String add = currentOutput.substring(index, currentOutput.length() - 3);
+                        num -= Double.parseDouble(add);
+                        index = currentOutput.length();
+                        operator = "+";
+                    }
+                    if (operator.equals("*")) {
+                        String currentOutput = output.getText().toString();
+                        product *= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
+                        num = num + factor * product;
+                        index = currentOutput.length();
+                        operator = "+";
+                    }
+                    if (operator.equals("/")) {
+                        String currentOutput = output.getText().toString();
+                        product /= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
+                        num = num + factor * product;
+                        index = currentOutput.length();
+                        operator = "+";
+                    }
+                }
+                break;
+
+            case R.id.minusButton:
+                negative = false;
+                if (output.length() == 0) {
+                    output.append("0 \u2212 ");
+                    index = output.length();
+                    operator = "-";
+
+                } else {
+                    output.append(" \u2212 ");
+
+                    if (operator.equals("-")) {
+                        String currentOutput = output.getText().toString();
+                        String add = currentOutput.substring(index, currentOutput.length() - 3);
+                        num -= Double.parseDouble(add);
+                        index = currentOutput.length();
+                        operator = "-";
+                    }
+                    if (operator.equals("") || operator.equals("+")) {
+                        String currentOutput = output.getText().toString();
+                        String add = currentOutput.substring(index, currentOutput.length() - 3);
+                        num += Double.parseDouble(add);
+                        index = currentOutput.length();
+                        operator = "-";
+                    }
+                    if (operator.equals("*")) {
+                        String currentOutput = output.getText().toString();
+                        product *= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
+                        num = num + factor * product;
+                        index = currentOutput.length();
+                        operator = "-";
+                    }
+                    if (operator.equals("/")) {
+                        String currentOutput = output.getText().toString();
+                        product /= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
+                        num = num + factor * product;
+                        index = currentOutput.length();
+                        operator = "-";
+                    }
+                }
+                break;
+
             case R.id.timeButton:
+                negative = false;
                 if (output.length() == 0) {
                     output.append("0 × ");
                     index = output.length();
                     factor = 0;
                     operator = "*";
-                }
-                else {
+                } else {
 
                     output.append(" × ");
 
@@ -166,13 +284,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
 
             case R.id.divideButton:
+                negative = false;
                 if (output.length() == 0) {
                     output.append("0 / ");
                     index = output.length();
                     operator = "/";
                     factor = 0;
-                }
-                else {
+                } else {
                     output.append(" / ");
 
                     if (index == 0) {
@@ -209,87 +327,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 break;
 
-            case R.id.plusButton:
-                if (output.length() == 0) {
-                    output.append("0 + ");
-                    index = output.length();
-                    operator = "+";
-
-                } else {
-                    output.append(" + ");
-
-                    if (operator.equals("+") || operator.equals("")) {
-                        String currentOutput = output.getText().toString();
-                        String add = currentOutput.substring(index, currentOutput.length() - 3);
-                        num += Double.parseDouble(add);
-                        index = currentOutput.length();
-                        operator = "+";
-                    }
-                    if (operator.equals("-")) {
-                        String currentOutput = output.getText().toString();
-                        String add = currentOutput.substring(index, currentOutput.length() - 3);
-                        num -= Double.parseDouble(add);
-                        index = currentOutput.length();
-                        operator = "+";
-                    }
-                    if (operator.equals("*")) {
-                        String currentOutput = output.getText().toString();
-                        product *= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
-                        num = num + factor * product;
-                        index = currentOutput.length();
-                        operator = "+";
-                    }
-                    if (operator.equals("/")) {
-                        String currentOutput = output.getText().toString();
-                        product /= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
-                        num = num + factor * product;
-                        index = currentOutput.length();
-                        operator = "+";
-                    }
-                }
-                break;
-
-            case R.id.minusButton:
-                if (output.length() == 0) {
-                    output.append("0 - ");
-                    index = output.length();
-                    operator = "-";
-
-                }
-                else {
-                    output.append(" - ");
-
-                    if (operator.equals("-")) {
-                        String currentOutput = output.getText().toString();
-                        String add = currentOutput.substring(index, currentOutput.length() - 3);
-                        num -= Double.parseDouble(add);
-                        index = currentOutput.length();
-                        operator = "-";
-                    }
-                    if (operator.equals("") || operator.equals("+")) {
-                        String currentOutput = output.getText().toString();
-                        String add = currentOutput.substring(index, currentOutput.length() - 3);
-                        num += Double.parseDouble(add);
-                        index = currentOutput.length();
-                        operator = "-";
-                    }
-                    if (operator.equals("*")) {
-                        String currentOutput = output.getText().toString();
-                        product *= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
-                        num = num + factor * product;
-                        index = currentOutput.length();
-                        operator = "-";
-                    }
-                    if (operator.equals("/")) {
-                        String currentOutput = output.getText().toString();
-                        product /= Double.parseDouble(currentOutput.substring(index, currentOutput.length() - 3));
-                        num = num + factor * product;
-                        index = currentOutput.length();
-                        operator = "-";
-                    }
-                }
-                break;
-
             case R.id.cancelButton:
                 output.setText("");
                 result.setText("");
@@ -298,6 +335,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 index = 0;
                 operator = "";
                 factor = 1;
+                negative = false;
                 break;
 
             case R.id.equalButton:
