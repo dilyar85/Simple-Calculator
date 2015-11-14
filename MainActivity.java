@@ -15,6 +15,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     int factor = 1;
     String operator = "";
     boolean negative = false;
+    boolean hasDot = false;
     double previousNum = 0;
 
     @Override
@@ -25,8 +26,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         Button one = (Button) findViewById(R.id.oneButton);
         one.setOnClickListener(this);
+
         Button two = (Button) findViewById(R.id.twoButton);
         two.setOnClickListener(this);
+
         Button three = (Button) findViewById(R.id.threeButton);
         three.setOnClickListener(this);
 
@@ -71,6 +74,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         Button negative = (Button) findViewById(R.id.negativeButton);
         negative.setOnClickListener(this);
+
+        Button dot = (Button) findViewById(R.id.dotButton);
+        dot.setOnClickListener(this);
 
     }
 
@@ -129,6 +135,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 output.append("0");
                 break;
 
+            case R.id.dotButton:
+
+                if (output.length() == 0) {
+                    output.append("0.");
+                } else if (Character.isDigit(output.getText().charAt(output.length() - 1)) && !hasDot) {
+                    output.append(".");
+                } else if (output.getText().toString().substring(output.length() - 1).equals(" ") || output.getText().toString().substring(output.length() - 1).equals("-")) {
+                    output.append("0.");
+                }
+                hasDot = true;
+
+                break;
+
             case R.id.negativeButton:
                 if (operator.equals("")) {
 
@@ -161,6 +180,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.plusButton:
                 negative = false;
+                hasDot = false;
                 if (output.length() == 0) {
                     output.append("0 + ");
                     index = output.length();
@@ -203,6 +223,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.minusButton:
                 negative = false;
+                hasDot = false;
                 if (output.length() == 0) {
                     output.append("0 \u2212 ");
                     index = output.length();
@@ -244,6 +265,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.timeButton:
                 negative = false;
+                hasDot = false;
                 if (output.length() == 0) {
                     output.append("0 × ");
                     index = output.length();
@@ -285,6 +307,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.divideButton:
                 negative = false;
+                hasDot = false;
                 if (output.length() == 0) {
                     output.append("0 / ");
                     index = output.length();
@@ -336,6 +359,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 operator = "";
                 factor = 1;
                 negative = false;
+                hasDot = false;
                 break;
 
             case R.id.equalButton:
@@ -359,7 +383,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     product /= Double.parseDouble(currentOutput.substring(index));
                     num = num + factor * product;
                 }
-                result.setText("= " + (int) num);
+                if (num % 1 == 0) {
+                    result.setText("= " + (int) num);
+                } else {
+
+                    result.setText("= " + (float) num);
+                }
                 break;
 
             default:
