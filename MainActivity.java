@@ -20,7 +20,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     ArrayList<Double> numbers = new ArrayList<>();
     ArrayList<String> operators = new ArrayList<String>();
 
-
     boolean negative = false;
     boolean hasDot = false;
 
@@ -164,12 +163,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                     product *= numbers.get(numbers.size() - 1);
                                     break;
                             }
+                            location = output.getText().toString().lastIndexOf(operators.get(operators.size() - 1)) + 1;
                         } else {
                             num = 0;
+                            location = 0;
                         }
                         operators.remove(operators.size() - 1);
                         numbers.remove(numbers.size() - 1);
-                        location = output.getText().toString().lastIndexOf(operators.get(operators.size() - 1)) + 1;
                     }
                     if (lastChr.equals("×") || lastChr.equals("÷")) {
                         if (operators.size() > 1) {
@@ -187,12 +187,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                     product *= numbers.get(numbers.size() - 1);
                                     break;
                             }
+                            location = output.getText().toString().lastIndexOf(operators.get(operators.size() - 1)) + 1;
                         } else {
                             product = 1;
+                            location = 0;
                         }
                         operators.remove(operators.size() - 1);
                         numbers.remove(numbers.size() - 1);
-                        location = output.getText().toString().lastIndexOf(operators.get(operators.size() - 1)) + 1;
                     }
                 }
 
