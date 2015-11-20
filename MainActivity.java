@@ -14,13 +14,13 @@ import java.util.zip.DeflaterOutputStream;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     double num = 0;
-    double lastNum = 0;
     int location = 0;
     double product = 1;
 
+    ArrayList<Double> numbers = new ArrayList<>();
     ArrayList<String> operators = new ArrayList<String>();
 
-    String lastString = "";
+
     boolean negative = false;
     boolean hasDot = false;
 
@@ -146,42 +146,52 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         hasDot = false;
                     }
                     if (lastChr.equals("+") || lastChr.equals("\u2212")) {
+                        if (operators.size() > 1) {
 
-                        switch (operators.get(operators.size() - 2)) {
-                            case "+":
-                                num -= lastNum;
-                                break;
-                            case "-":
-                                num += lastNum;
-                                break;
-                            case "*":
-                                num -= product;
-                                product /= lastNum;
-                                break;
-                            case "/":
-                                num -= product;
-                                product *= lastNum;
-                                break;
+                            switch (operators.get(operators.size() - 2)) {
+                                case "+":
+                                    num -= numbers.get(numbers.size() - 1);
+                                    break;
+                                case "-":
+                                    num += numbers.get(numbers.size() - 1);
+                                    break;
+                                case "*":
+                                    num -= product;
+                                    product /= numbers.get(numbers.size() - 1);
+                                    break;
+                                case "/":
+                                    num -= product;
+                                    product *= numbers.get(numbers.size() - 1);
+                                    break;
+                            }
+                        } else {
+                            num = 0;
                         }
                         operators.remove(operators.size() - 1);
+                        numbers.remove(numbers.size() - 1);
                         location = output.getText().toString().lastIndexOf(operators.get(operators.size() - 1)) + 1;
                     }
                     if (lastChr.equals("×") || lastChr.equals("÷")) {
-                        switch (operators.get(operators.size() - 2)) {
-                            case "+":
-                                product = 1;
-                                break;
-                            case "-":
-                                product = -1;
-                                break;
-                            case "*":
-                                product /= lastNum;
-                                break;
-                            case "/":
-                                product *= lastNum;
-                                break;
+                        if (operators.size() > 1) {
+                            switch (operators.get(operators.size() - 2)) {
+                                case "+":
+                                    product = 1;
+                                    break;
+                                case "-":
+                                    product = -1;
+                                    break;
+                                case "*":
+                                    product /= numbers.get(numbers.size() - 1);
+                                    break;
+                                case "/":
+                                    product *= numbers.get(numbers.size() - 1);
+                                    break;
+                            }
+                        } else {
+                            product = 1;
                         }
                         operators.remove(operators.size() - 1);
+                        numbers.remove(numbers.size() - 1);
                         location = output.getText().toString().lastIndexOf(operators.get(operators.size() - 1)) + 1;
                     }
                 }
@@ -240,23 +250,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.plusButton:
                 if (output.length() == 0) {
                     output.append("0+");
+                    numbers.add(0.0);
                 } else {
                     output.append("+");
 
-                    lastString = output.getText().toString().substring(location, output.length() - 1);
-                    lastNum = Double.parseDouble(lastString);
+                    String lastString = output.getText().toString().substring(location, output.length() - 1);
+                    numbers.add(Double.parseDouble(lastString));
                     //to avoid operators.size() - 1 < 0, here uses if & else if statement.
                     if (operators.size() == 0) {
-                        num += lastNum;
+                        num += numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("+")) {
-                        num += lastNum;
+                        num += numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("-")) {
-                        num -= lastNum;
+                        num -= numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= lastNum;
+                        product *= numbers.get(numbers.size() - 1);
                         num += product;
                     } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= lastNum;
+                        product /= numbers.get(numbers.size() - 1);
                         num += product;
                     }
                 }
@@ -271,22 +282,23 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 if (output.length() == 0) {
                     output.append("0\u2212");
+                    numbers.add(0.0);
                 } else {
                     output.append("\u2212");
 
-                    lastString = output.getText().toString().substring(location, output.length() - 1);
-                    lastNum = Double.parseDouble(lastString);
+                    String lastString = output.getText().toString().substring(location, output.length() - 1);
+                    numbers.add(Double.parseDouble(lastString));
                     if (operators.size() == 0) {
-                        num += lastNum;
+                        num += numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("+")) {
-                        num += lastNum;
+                        num += numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("-")) {
-                        num -= lastNum;
+                        num -= numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= lastNum;
+                        product *= numbers.get(numbers.size() - 1);
                         num += product;
                     } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= lastNum;
+                        product /= numbers.get(numbers.size() - 1);
                         num += product;
                     }
                 }
@@ -305,18 +317,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 } else {
                     output.append("×");
 
-                    lastString = output.getText().toString().substring(location, output.length() - 1);
-                    lastNum = Double.parseDouble(lastString);
+                    String lastString = output.getText().toString().substring(location, output.length() - 1);
+                    numbers.add(Double.parseDouble(lastString));
                     if (operators.size() == 0) {
-                        product *= lastNum;
+                        product *= numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("+")) {
-                        product = lastNum;
+                        product = numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("-")) {
-                        product = -1 * lastNum;
+                        product = -1 * numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= lastNum;
+                        product *= numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= lastNum;
+                        product /= numbers.get(numbers.size() - 1);
                     }
 
                 }
@@ -335,18 +347,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 } else {
                     output.append("\u00F7");
 
-                    lastString = output.getText().toString().substring(location, output.length() - 1);
-                    lastNum = Double.parseDouble(lastString);
+                    String lastString = output.getText().toString().substring(location, output.length() - 1);
+                    numbers.add(Double.parseDouble(lastString));
                     if (operators.size() == 0) {
-                        product *= lastNum;
+                        product *= numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("+")) {
-                        product = lastNum;
+                        product = numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("-")) {
-                        product = -1 * lastNum;
+                        product = -1 * numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= lastNum;
+                        product *= numbers.get(numbers.size() - 1);
                     } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= lastNum;
+                        product /= numbers.get(numbers.size() - 1);
                     }
                 }
                 operators.add("/");
@@ -358,11 +370,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.cancelButton:
                 operators.clear();
+                numbers.clear();
                 num = 0;
                 product = 1;
                 location = 0;
-                lastNum = 0;
-                lastString = "";
                 negative = false;
                 hasDot = false;
                 output.setText("");
@@ -374,20 +385,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 if (output.length() == 0) {
                     result.setText("= 0");
                 } else {
-                    lastString = output.getText().toString().substring(location);
-                    lastNum = Double.parseDouble(lastString);
+                    String lastString = output.getText().toString().substring(location);
+                    numbers.add(Double.parseDouble(lastString));
                     if (operators.size() == 0) {
                         result.setText("= " + lastString);
                     } else {
                         if (operators.get(operators.size() - 1).equals("+")) {
-                            num += lastNum;
+                            num += numbers.get(numbers.size() - 1);
                         } else if (operators.get(operators.size() - 1).equals("-")) {
-                            num -= lastNum;
+                            num -= numbers.get(numbers.size() - 1);
                         } else if (operators.get(operators.size() - 1).equals("*")) {
-                            product *= lastNum;
+                            product *= numbers.get(numbers.size() - 1);
                             num += product;
                         } else if (operators.get(operators.size() - 1).equals("/")) {
-                            product /= lastNum;
+                            product /= numbers.get(numbers.size() - 1);
                             num += product;
                         }
 
@@ -399,7 +410,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         }
                     }
                 }
-                
+
                 break;
 
             default:
