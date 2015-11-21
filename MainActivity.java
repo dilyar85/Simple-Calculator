@@ -14,14 +14,20 @@ import java.util.zip.DeflaterOutputStream;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     double num = 0;
-    int location = 0;
+    double insideNum = 0;
     double product = 1;
+    double insideProduct = 0;
+    int location = 0;
 
     ArrayList<Double> numbers = new ArrayList<>();
     ArrayList<String> operators = new ArrayList<String>();
+    ArrayList<Double> insideNumbers = new ArrayList<>();
+    ArrayList<String> insideOperators = new ArrayList<>();
+    ArrayList<String> beforeParenthesisOperators = new ArrayList<>();
 
-    boolean negative = false;
+    boolean hasNegative = false;
     boolean hasDot = false;
+    boolean inParenthesis = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,14 +83,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Button equal = (Button) findViewById(R.id.equalButton);
         equal.setOnClickListener(this);
 
-        Button negative = (Button) findViewById(R.id.negativeButton);
-        negative.setOnClickListener(this);
+        Button hasNegative = (Button) findViewById(R.id.negativeButton);
+        hasNegative.setOnClickListener(this);
 
         Button dot = (Button) findViewById(R.id.dotButton);
         dot.setOnClickListener(this);
 
         Button delete = (Button) findViewById(R.id.deleteButton);
         delete.setOnClickListener(this);
+
+        Button parenthesis = (Button) findViewById(R.id.parenthesisButton);
+        parenthesis.setOnClickListener(this);
 
     }
 
@@ -134,6 +143,51 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.zeroButton:
                 output.append("0");
+                break;
+
+            case R.id.parenthesisButton:
+                if (!inParenthesis) {
+                    if (output.length() == 0 || output.getText().toString().substring(output.length() - 1).matches("[+−×÷]")) {
+                        if (operators.size() > 0) {
+                            beforeParenthesisOperators.add(operators.get(operators.size() - 1));
+                        }
+                        output.append("(");
+                        location = output.length();
+                        inParenthesis = true;
+
+                    }
+                }
+                //When close the parenthesis.
+                else {
+                    //Close ) only a digit before it.
+                    if (Character.isDigit(output.getText().toString().charAt(output.length() - 1))) {
+                        String lastString = output.getText().toString().substring(location);
+                        insideNumbers.add(Double.parseDouble(lastString));
+                        if (insideOperators.size() == 0) {
+                            insideNum = insideNumbers.get(insideNumbers.size() - 1);
+                        } else {
+                            switch (insideOperators.get(insideOperators.size() - 1)) {
+                                case "+":
+                                    insideNum += insideNumbers.get(insideNumbers.size() - 1);
+                                    break;
+                                case "-":
+                                    insideNum -= insideNumbers.get(insideNumbers.size() - 1);
+                                    break;
+                                case "*":
+                                    insideProduct *= insideNumbers.get(insideNumbers.size() - 1);
+                                    insideNum += insideProduct;
+                                    break;
+                                case "/":
+                                    insideProduct /= insideNumbers.get(insideNumbers.size() - 1);
+                                    insideNum += insideProduct;
+                                    break;
+                            }
+                        }
+                        output.append(")");
+                        location = output.length();
+                        inParenthesis = false;
+                    }
+                }
                 break;
 
             case R.id.deleteButton:
@@ -221,12 +275,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.negativeButton:
                 if (operators.size() == 0) {
 
-                    if (!negative) {
+                    if (!hasNegative) {
                         output.setText("-" + output.getText());
-                        negative = true;
+                        hasNegative = true;
                     } else {
                         output.setText(output.getText().toString().replace("-", ""));
-                        negative = false;
+                        hasNegative = false;
                     }
                 } else {
                     if (output.getText().length() == location) {
@@ -238,8 +292,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         } else if (Character.isDigit(lastInput.charAt(0))) {
                             output.setText(output.getText().toString().substring(0, location) + "-" + lastInput);
                         } else if (lastInput.substring(0, 1).equals("-")) {
-                            String removeNegative = output.getText().toString().substring(0, location) + output.getText().toString().substring(location + 1);
-                            output.setText(removeNegative);
+                            String negativeRemoved = output.getText().toString().substring(0, location) + output.getText().toString().substring(location + 1);
+                            output.setText(negativeRemoved);
                         } else {
                             output.append("-");
                         }
@@ -249,133 +303,452 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
 
             case R.id.plusButton:
-                if (output.length() == 0) {
-                    output.append("0+");
-                    numbers.add(0.0);
-                } else {
-                    output.append("+");
+                //When it is not inside the parenthesis.
 
-                    String lastString = output.getText().toString().substring(location, output.length() - 1);
-                    numbers.add(Double.parseDouble(lastString));
-                    //to avoid operators.size() - 1 < 0, here uses if & else if statement.
-                    if (operators.size() == 0) {
-                        num += numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("+")) {
-                        num += numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("-")) {
-                        num -= numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= numbers.get(numbers.size() - 1);
-                        num += product;
-                    } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= numbers.get(numbers.size() - 1);
-                        num += product;
+                if (!inParenthesis) {
+                    if (output.length() == 0) {
+                        output.append("0+");
+                        location = output.length();
+                        numbers.add(0.0);
+                        operators.add("+");
+                        hasNegative = false;
+                        hasDot = false;
+                    } else {
+                        //Determine the character right before the operator.
+
+                        //When it is digit.
+                        if (Character.isDigit(output.getText().charAt(output.length() - 1))) {
+                            String lastString = output.getText().toString().substring(location);
+                            numbers.add(Double.parseDouble(lastString));
+                            if (operators.size() == 0) {
+                                num = numbers.get(numbers.size() - 1);
+                            } else {
+                                switch (operators.get(operators.size() - 1)) {
+                                    case "+":
+                                        num += numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "-":
+                                        num -= numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "*":
+                                        product *= numbers.get(numbers.size() - 1);
+                                        num += product;
+                                        break;
+                                    case "/":
+                                        product /= numbers.get(numbers.size() - 1);
+                                        num += product;
+                                        break;
+                                }
+                            }
+                            output.append("+");
+                            location = output.length();
+                            operators.add("+");
+                        }
+                        //When it is parenthesis ")".
+                        if (output.getText().toString().substring(output.length() - 1).equals(")")) {
+                            if (beforeParenthesisOperators.size() == 0) {
+                                num = insideNum;
+                            } else {
+                                switch (beforeParenthesisOperators.get(beforeParenthesisOperators.size() - 1)) {
+                                    case "+":
+                                        num += insideNum;
+                                        break;
+                                    case "-":
+                                        num -= insideNum;
+                                        break;
+                                    case "*":
+                                        product *= insideNum;
+                                        num += product;
+                                        break;
+                                    case "/":
+                                        product /= insideNum;
+                                        num += product;
+                                        break;
+                                }
+                            }
+                            output.append("+");
+                            location = output.length();
+                            operators.add("+");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
                     }
                 }
-                operators.add("+");
-                location = output.length();
-                negative = false;
-                hasDot = false;
 
+                //When it is inside the parenthesis.
+                if (inParenthesis) {
+                    if (output.length() == 1) {
+                        insideNumbers.add(0.0);
+                        output.append("0+");
+                        location = output.length();
+                        insideOperators.add("+");
+                        hasNegative = false;
+                        hasDot = false;
+
+                    } else if (Character.isDigit(output.getText().toString().charAt(output.length() - 1))) {
+                        String lastString = output.getText().toString().substring(location);
+                        insideNumbers.add(Double.parseDouble(lastString));
+                        if (insideOperators.size() == 0) {
+                            insideNum = insideNumbers.get(insideNumbers.size() - 1);
+                        } else {
+                            switch (insideOperators.get(insideOperators.size() - 1)) {
+                                case "+":
+                                    insideNum += insideNumbers.get(insideNumbers.size() - 1);
+                                    break;
+                                case "-":
+                                    insideNum -= insideNumbers.get(insideNumbers.size() - 1);
+                                    break;
+                                case "*":
+                                    insideProduct *= insideNumbers.get(insideNumbers.size() - 1);
+                                    insideNum += insideProduct;
+                                    break;
+                                case "/":
+                                    insideProduct /= insideNumbers.get(insideNumbers.size() - 1);
+                                    insideNum += insideProduct;
+                            }
+                        }
+                        output.append("+");
+                        location = output.length();
+                        insideOperators.add("+");
+                        hasNegative = false;
+                        hasDot = false;
+                    }
+                }
                 break;
 
             case R.id.minusButton:
+                if (!inParenthesis) {
+                    if (output.length() == 0) {
+                        numbers.add(0.0);
+                        output.append("0−");
+                        location = output.length();
+                        operators.add("-");
+                        hasNegative = false;
+                        hasDot = false;
+                    } else {
+                        if (Character.isDigit(output.getText().charAt(output.length() - 1))) {
+                            String lastString = output.getText().toString().substring(location);
+                            numbers.add(Double.parseDouble(lastString));
+                            if (operators.size() == 0) {
+                                num = numbers.get(numbers.size() - 1);
+                            } else {
+                                switch (operators.get(operators.size() - 1)) {
 
-                if (output.length() == 0) {
-                    output.append("0\u2212");
-                    numbers.add(0.0);
-                } else {
-                    output.append("\u2212");
+                                    case "+":
+                                        num += numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "-":
+                                        num -= numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "*":
+                                        product *= numbers.get(numbers.size() - 1);
+                                        num += product;
+                                        break;
+                                    case "/":
+                                        product /= numbers.get(numbers.size() - 1);
+                                        num += product;
+                                        break;
+                                }
+                            }
+                            output.append("+");
+                            location = output.length();
+                            operators.add("+");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
 
-                    String lastString = output.getText().toString().substring(location, output.length() - 1);
-                    numbers.add(Double.parseDouble(lastString));
-                    if (operators.size() == 0) {
-                        num += numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("+")) {
-                        num += numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("-")) {
-                        num -= numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= numbers.get(numbers.size() - 1);
-                        num += product;
-                    } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= numbers.get(numbers.size() - 1);
-                        num += product;
+                        if (output.getText().toString().substring(output.length() - 1).equals(")")) {
+                            if (beforeParenthesisOperators.size() == 0) {
+                                num = insideNum;
+                            } else {
+                                switch (beforeParenthesisOperators.get(beforeParenthesisOperators.size() - 1)) {
+                                    case "+":
+                                        num += insideNum;
+                                        break;
+                                    case "-":
+                                        num -= insideNum;
+                                        break;
+                                    case "*":
+                                        product *= insideNum;
+                                        num += product;
+                                        break;
+                                    case "/":
+                                        product /= insideNum;
+                                        num += product;
+                                        break;
+                                }
+                            }
+                            output.append("+");
+                            location = output.length();
+                            operators.add("+");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
                     }
                 }
-                operators.add("-");
-                location = output.length();
-                negative = false;
-                hasDot = false;
 
+                if (inParenthesis) {
+                    if (output.length() == 1) {
+                        insideNumbers.add(0.0);
+                        output.append("0−");
+                        location = output.length();
+                        insideOperators.add("+");
+                        hasNegative = false;
+                        hasDot = false;
+                    } else if (Character.isDigit(output.getText().toString().charAt(output.length() - 1))) {
+                        String lastString = output.getText().toString().substring(location);
+                        insideNumbers.add(Double.parseDouble(lastString));
+                        if (insideOperators.size() == 0) {
+                            insideNum = insideNumbers.get(insideNumbers.size() - 1);
+                        } else {
+                            switch (insideOperators.get(insideOperators.size() - 1)) {
+                                case "+":
+                                    insideNum += insideNumbers.get(insideNumbers.size() - 1);
+                                    break;
+                                case "-":
+                                    insideNum -= insideNumbers.get(insideNumbers.size() - 1);
+                                    break;
+                                case "*":
+                                    insideProduct *= insideNumbers.get(insideNumbers.size() - 1);
+                                    insideNum += insideProduct;
+                                    break;
+                                case "/":
+                                    insideProduct /= insideNumbers.get(insideNumbers.size() - 1);
+                                    insideNum += insideProduct;
+                            }
+                        }
+                        output.append("−");
+                        location = output.length();
+                        insideOperators.add("-");
+                        hasNegative = false;
+                        hasDot = false;
+                    }
+                }
                 break;
 
             case R.id.timeButton:
-
-                if (output.length() == 0) {
-                    output.append("0×");
-                    product = 0;
-                } else {
-                    output.append("×");
-
-                    String lastString = output.getText().toString().substring(location, output.length() - 1);
-                    numbers.add(Double.parseDouble(lastString));
-                    if (operators.size() == 0) {
-                        product *= numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("+")) {
-                        product = numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("-")) {
-                        product = -1 * numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= numbers.get(numbers.size() - 1);
+                if (!inParenthesis) {
+                    if (output.length() == 0) {
+                        product = 0;
+                        numbers.add(0.0);
+                        output.append("0×");
+                        location = output.length();
+                        operators.add("*");
+                        hasNegative = false;
+                        hasDot = false;
+                    } else {
+                        if (Character.isDigit(output.getText().charAt(output.length() - 1))) {
+                            String lastString = output.getText().toString().substring(location);
+                            numbers.add(Double.parseDouble(lastString));
+                            if (operators.size() == 0) {
+                                product *= numbers.get(numbers.size() - 1);
+                            } else {
+                                switch (operators.get(operators.size() - 1)) {
+                                    case "+":
+                                        product = numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "-":
+                                        product = -1 * numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "*":
+                                        product *= numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "/":
+                                        product /= numbers.get(numbers.size() - 1);
+                                        break;
+                                }
+                            }
+                            output.append("×");
+                            location = output.length();
+                            operators.add("*");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
+                        if (output.getText().toString().substring(output.length() - 1).equals(")")) {
+                            if (beforeParenthesisOperators.size() == 0) {
+                                product = insideProduct;
+                            } else {
+                                switch (beforeParenthesisOperators.get(beforeParenthesisOperators.size() - 1)) {
+                                    case "+":
+                                        product = insideNum;
+                                        break;
+                                    case "-":
+                                        product = -1 * insideNum;
+                                        break;
+                                    case "*":
+                                        product *= insideNum;
+                                        break;
+                                    case "/":
+                                        product /= insideNum;
+                                        break;
+                                }
+                            }
+                            output.append("×");
+                            location = output.length();
+                            operators.add("*");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
                     }
-
                 }
-                operators.add("*");
-                location = output.length();
-                negative = false;
-                hasDot = false;
 
+                if (inParenthesis) {
+                    if (output.length() == 1) {
+                        insideNumbers.add(0.0);
+                        output.append("0×");
+                        location = output.length();
+                        insideOperators.add("*");
+                        hasNegative = false;
+                        hasDot = false;
+                    } else {
+                        if (Character.isDigit(output.getText().charAt(output.length() - 1))) {
+                            String lastString = output.getText().toString().substring(location);
+                            insideNumbers.add(Double.parseDouble(lastString));
+                            if (insideOperators.size() == 0) {
+                                insideProduct = insideNumbers.get(insideNumbers.size() - 1);
+                            } else {
+                                switch (insideOperators.get(insideOperators.size() - 1)) {
+                                    case "+":
+                                        insideProduct = insideNumbers.get(insideNumbers.size() - 1);
+                                        break;
+                                    case "-":
+                                        insideProduct = -1 * insideNumbers.get(insideNumbers.size() - 1);
+                                        break;
+                                    case "*":
+                                        insideProduct *= insideNumbers.get(insideNumbers.size() - 1);
+                                        break;
+                                    case "/":
+                                        insideProduct /= insideNumbers.get(insideNumbers.size() - 1);
+                                }
+                            }
+                            output.append("×");
+                            location = output.length();
+                            insideOperators.add("*");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
+                    }
+                }
                 break;
 
             case R.id.divideButton:
-
-                if (output.length() == 0) {
-                    output.append("0\u00F7");
-                    product = 0;
-                } else {
-                    output.append("\u00F7");
-
-                    String lastString = output.getText().toString().substring(location, output.length() - 1);
-                    numbers.add(Double.parseDouble(lastString));
-                    if (operators.size() == 0) {
-                        product *= numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("+")) {
-                        product = numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("-")) {
-                        product = -1 * numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("*")) {
-                        product *= numbers.get(numbers.size() - 1);
-                    } else if (operators.get(operators.size() - 1).equals("/")) {
-                        product /= numbers.get(numbers.size() - 1);
+                if (!inParenthesis) {
+                    if (output.length() == 0) {
+                        product = 0;
+                        numbers.add(0.0);
+                        output.append("0÷");
+                        location = output.length();
+                        operators.add("/");
+                        hasNegative = false;
+                        hasDot = false;
+                    } else {
+                        if (Character.isDigit(output.getText().charAt(output.length() - 1))) {
+                            String lastString = output.getText().toString().substring(location);
+                            numbers.add(Double.parseDouble(lastString));
+                            if (operators.size() == 0) {
+                                product *= numbers.get(numbers.size() - 1);
+                            } else {
+                                switch (operators.get(operators.size() - 1)) {
+                                    case "+":
+                                        product = numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "-":
+                                        product = -1 * numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "*":
+                                        product *= numbers.get(numbers.size() - 1);
+                                        break;
+                                    case "/":
+                                        product /= numbers.get(numbers.size() - 1);
+                                        break;
+                                }
+                            }
+                            output.append("÷");
+                            location = output.length();
+                            operators.add("/");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
+                        if (output.getText().toString().substring(output.length() - 1).equals(")")) {
+                            if (beforeParenthesisOperators.size() == 0) {
+                                product = insideNum;
+                            } else {
+                                switch (beforeParenthesisOperators.get(beforeParenthesisOperators.size() - 1)) {
+                                    case "+":
+                                        product = insideNum;
+                                        break;
+                                    case "-":
+                                        product = -1 * insideNum;
+                                        break;
+                                    case "*":
+                                        product *= insideNum;
+                                        break;
+                                    case "/":
+                                        product /= insideNum;
+                                        break;
+                                }
+                            }
+                            output.append("÷");
+                            location = output.length();
+                            operators.add("/");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
                     }
                 }
-                operators.add("/");
-                location = output.length();
-                negative = false;
-                hasDot = false;
 
+                if (inParenthesis) {
+                    if (output.length() == 1) {
+                        insideNumbers.add(0.0);
+                        output.append("0÷");
+                        location = output.length();
+                        insideOperators.add("/");
+                        hasNegative = false;
+                        hasDot = false;
+                    } else {
+                        if (Character.isDigit(output.getText().charAt(output.length() - 1))) {
+                            String lastString = output.getText().toString().substring(location);
+                            insideNumbers.add(Double.parseDouble(lastString));
+                            if (insideOperators.size() == 0) {
+                                insideProduct = insideNumbers.get(insideNumbers.size() - 1);
+                            } else {
+                                switch (insideOperators.get(insideOperators.size() - 1)) {
+                                    case "+":
+                                        insideProduct = insideNumbers.get(insideNumbers.size() - 1);
+                                        break;
+                                    case "-":
+                                        insideProduct = -1 * insideNumbers.get(insideNumbers.size() - 1);
+                                        break;
+                                    case "*":
+                                        insideProduct *= insideNumbers.get(insideNumbers.size() - 1);
+                                        break;
+                                    case "/":
+                                        insideProduct /= insideNumbers.get(insideNumbers.size() - 1);
+                                }
+                            }
+                            output.append("÷");
+                            location = output.length();
+                            insideOperators.add("/");
+                            hasNegative = false;
+                            hasDot = false;
+                        }
+                    }
+                }
                 break;
 
             case R.id.cancelButton:
                 operators.clear();
+                insideOperators.clear();
                 numbers.clear();
+                insideNumbers.clear();
+                beforeParenthesisOperators.clear();
                 num = 0;
+                insideNum = 0;
                 product = 1;
+                insideProduct = 1;
                 location = 0;
-                negative = false;
+                inParenthesis = false;
+                hasNegative = false;
                 hasDot = false;
                 output.setText("");
                 result.setText("");
@@ -386,23 +759,59 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 if (output.length() == 0) {
                     result.setText("= 0");
                 } else {
-                    String lastString = output.getText().toString().substring(location);
-                    numbers.add(Double.parseDouble(lastString));
-                    if (operators.size() == 0) {
-                        result.setText("= " + lastString);
-                    } else {
-                        if (operators.get(operators.size() - 1).equals("+")) {
-                            num += numbers.get(numbers.size() - 1);
-                        } else if (operators.get(operators.size() - 1).equals("-")) {
-                            num -= numbers.get(numbers.size() - 1);
-                        } else if (operators.get(operators.size() - 1).equals("*")) {
-                            product *= numbers.get(numbers.size() - 1);
-                            num += product;
-                        } else if (operators.get(operators.size() - 1).equals("/")) {
-                            product /= numbers.get(numbers.size() - 1);
-                            num += product;
-                        }
+                    if (Character.isDigit(output.getText().charAt(output.length() - 1))) {
+                        String lastString = output.getText().toString().substring(location);
+                        numbers.add(Double.parseDouble(lastString));
+                        if (operators.size() == 0) {
+                            result.setText("= " + lastString);
+                        } else {
+                            switch (operators.get(operators.size() - 1)) {
+                                case "+":
+                                    num += numbers.get(numbers.size() - 1);
+                                    break;
+                                case "-":
+                                    num -= numbers.get(numbers.size() - 1);
+                                    break;
+                                case "*":
+                                    product *= numbers.get(numbers.size() - 1);
+                                    num += product;
+                                    break;
+                                case "/":
+                                    product /= numbers.get(numbers.size() - 1);
+                                    num += product;
+                                    break;
+                            }
+                            if (num % 1 == 0) {
+                                result.setText("= " + (int) num);
+                            } else {
 
+                                result.setText("= " + (float) num);
+                            }
+                        }
+                    }
+
+                    if (output.getText().toString().substring(output.length() - 1).equals(")")) {
+                        if (beforeParenthesisOperators.size() == 0) {
+                            num = insideNum;
+
+                        } else {
+                            switch (beforeParenthesisOperators.get(beforeParenthesisOperators.size() - 1)) {
+                                case "+":
+                                    num += insideNum;
+                                    break;
+                                case "-":
+                                    num -= insideNum;
+                                    break;
+                                case "*":
+                                    product *= insideNum;
+                                    num += product;
+                                    break;
+                                case "/":
+                                    product /= insideNum;
+                                    num += product;
+                                    break;
+                            }
+                        }
                         if (num % 1 == 0) {
                             result.setText("= " + (int) num);
                         } else {
@@ -411,11 +820,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         }
                     }
                 }
-
-                break;
-
-            default:
                 break;
         }
     }
 }
+
