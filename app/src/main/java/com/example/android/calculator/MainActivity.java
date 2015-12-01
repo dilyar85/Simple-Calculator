@@ -244,8 +244,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 case R.id.deleteButton:
                     if (result.length() > 0) {
                         onClick(findViewById(R.id.cancelButton));
-                    }
-                    else {
+                    } else {
 
                         if (output.length() > 0) {
 
@@ -894,7 +893,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     break;
 
                 case R.id.equalButton:
-                    if(result.length() == 0) {
+                    if (result.length() == 0) {
                         if (inParenthesis) {
                             onClick(findViewById(R.id.parenthesisButton));
                         }
@@ -992,12 +991,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
     }
+
     public void checkAndClear(String s) {
+
         TextView output = (TextView) findViewById(R.id.outputTextView);
         TextView result = (TextView) findViewById(R.id.resultTextView);
         LinearLayout outputLinearLayout = (LinearLayout) findViewById(R.id.outputLinearLayout);
         LinearLayout resultLinearLayout = (LinearLayout) findViewById(R.id.resultLinearLayout);
-        if(result.length() > 0) {
+        if (result.length() > 0) {
             LinearLayout.LayoutParams normal = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.5f);
             outputLinearLayout.setLayoutParams(normal);
             resultLinearLayout.setLayoutParams(normal);
@@ -1026,6 +1027,3 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 }
-
-
-
