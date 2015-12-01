@@ -7,51 +7,66 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/outputTextView"
+    <LinearLayout
+        android:id="@+id/outputLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1.5"
-        android:background="#03A9F4"
-        android:fontFamily="sans-serif-thin"
-        android:gravity="right"
-        android:paddingRight="5dp"
-        android:paddingTop="10dp"
-        android:textColor="#ffffff"
+        android:orientation="vertical">
 
-        android:textSize="60dp"/>
+        <TextView
+            android:id="@+id/outputTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#03A9F4"
+            android:fontFamily="sans-serif-thin"
+            android:gravity="right"
+            android:paddingRight="5dp"
+            android:paddingTop="10dp"
+            android:textColor="#ffffff"
+            android:textSize="60dp"/>
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/resultTextView"
+    <LinearLayout
+        android:id="@+id/resultLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1.5"
+        android:orientation="vertical">
 
-        android:background="#03A9F4"
-        android:fontFamily="sans-serif-thin"
-        android:gravity="right"
-        android:paddingRight="5dp"
-        android:textColor="#ffffff"
-        android:textSize="70dp"/>
+        <TextView
+            android:id="@+id/resultTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#03A9F4"
+            android:fontFamily="sans-serif-thin"
+            android:gravity="right"
+            android:paddingRight="5dp"
+            android:textColor="#ffffff"
+            android:textSize="68dp"/>
+    </LinearLayout>
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@drawable/unfold"
-        android:text="\u02C5"
-        android:textColor="#ffffff"
-        android:textSize="45sp"
-        />
+        android:orientation="vertical">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/unfold"
+            android:text="\u02C5"
+            android:textColor="#ffffff"
+            android:textSize="45sp"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="6"
         android:background="#ffffff"
-        android:orientation="vertical"
-
-        >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
