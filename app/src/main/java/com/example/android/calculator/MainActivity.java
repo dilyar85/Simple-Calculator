@@ -485,6 +485,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 output.append("+");
                                 location = output.length();
                                 operators.add("+");
+                                hasDot = false;
                             }
                             //When it is parenthesis ")".
                             if (output.getText().toString().substring(output.length() - 1).equals(")")) {
